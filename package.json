@@ -1,0 +1,37 @@
+{
+    "name": "matrix_pan_rotate_zoom",
+    "devDependencies": {
+        "@babel/cli": "^7.2.3",
+        "@babel/core": "^7.2.2",
+        "@babel/preset-env": "^7.2.3",
+        "@babel/register": "^7.0.0",
+        "babel-core": "^7.0.0-bridge.0",
+        "babel-loader": "^8.0.5",
+        "http-server": "^0.11.1",
+        "webpack": "^4.28.4",
+        "webpack-cli": "^3.2.1",
+        "webpack-merge": "^4.2.1"
+    },
+    "dependencies": {
+        "@babel/polyfill": "^7.2.5"
+    },
+    "version": "1.0.0",
+    "description": "A matrix transformation demo.",
+    "main": "src/index.js",
+    "scripts": {
+        "setup": "./node_modules/.bin/webdriver-manager update",
+        "build": "./node_modules/.bin/webpack --config webpack.prod.config.js",
+        "dev": "./node_modules/.bin/webpack --config webpack.dev.config.js",
+        "server": "./node_modules/.bin/http-server"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/Peregrine42/matrix_pan_rotate_zoom.git"
+    },
+    "author": "Duncan Fermor",
+    "license": "MIT",
+    "bugs": {
+        "url": "https://github.com/Peregrine42/matrix_pan_rotate_zoom/issues"
+    },
+    "homepage": "https://github.com/Peregrine42/matrix_pan_rotate_zoom#readme"
+}
