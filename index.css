@@ -1,3 +1,8 @@
 svg {
   background-color: green;
+  border-radius: 5px;
+}
+
+#map1 {
+  border: 2px solid black;
 }
