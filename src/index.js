@@ -1,13 +1,32 @@
 import waitForDOM from "./utils/waitForDOM"
-import {scale, rotateDEG, translate, compose} from 'transformation-matrix';
+import {scale, rotateDEG, translate, compose, applyToPoint} from 'transformation-matrix';
 import SVG from 'svg.js'
 import { Tile } from './model/tile'
 
 let props = {}
 
+const update = (tiles, map, screenX, screenY, x, y, rotation, zoom) => {
+    tiles.forEach((tile) => { 
+        let m = compose(
+            translate(screenX, screenY),
+            scale(zoom),
+            translate(-x, -y),
+            rotateDEG(rotation, x, y),
+
+            translate(tile.x, tile.y),
+            scale(tile.scale),
+            translate(-tile.width/2, -tile.height/2),
+            rotateDEG(tile.rotation, tile.width/2, tile.height/2),
+        )
+        tile.element.transform(m)
+    })
+}
+
 const main = (props) => {
     let tiles = [
-        new Tile(100, 0, "/images/card1.png", "card1", true, 0, 1),
+        new Tile(0, 0, "/images/card1.png", "card1", true, 0, 0.25),
+        new Tile(100, 0, "/images/card1.png", "card1", true, 0, 0.25),
+        new Tile(-100, 0, "/images/card1.png", "card1", true, 90, 0.25),
     ]
     let visibleImageTiles = tiles.filter(t => t.visible && t.url)
     let map1 = SVG("map1")
@@ -27,19 +46,45 @@ const main = (props) => {
     })
 
     setTimeout(() => {
-        let x = map1.width()/2
-        let y = map1.height()/2
-        let rotation = 90
+        let screenX = map1.width()/2
+        let screenY = map1.height()/2
+        let x = 0
+        let y = 0
+        let rotation = 0
+        let zoom = 0.5
 
-        visibleImageTiles.forEach((tile) => { 
-            let m = compose(
-                rotateDEG(rotation, map1.width()/2, map1.height()/2),
-                translate(x,y),
-                translate(tile.x, tile.y),
-                translate(-tile.width/2, -tile.height/2),
-                rotateDEG(tile.rotation, tile.width/2, tile.height/2),
-            )
-            tile.element.transform(m)
+        update(visibleImageTiles, map1, screenX, screenY, x, y, rotation, zoom)
+
+        window.addEventListener("keyup", (e) => {
+            if (e.key === "ArrowUp") {
+                let v = applyToPoint(rotateDEG(-rotation), {x: 0, y: -10})
+                x += v.x
+                y += v.y
+            } else if (e.key === "ArrowDown") {
+                let v = applyToPoint(rotateDEG(-rotation), {x: 0, y: 10})
+                x += v.x
+                y += v.y
+            } else if (e.key === "ArrowLeft") {
+                let v = applyToPoint(rotateDEG(-rotation), {x: -10, y: 0})
+                x += v.x
+                y += v.y
+            } else if (e.key === "ArrowRight") {
+                let v = applyToPoint(rotateDEG(-rotation), {x: 10, y: 0})
+                x += v.x
+                y += v.y
+            } else if (e.key === "=") {
+                zoom = zoom * 1.25
+            } else if (e.key === "-") {
+                zoom = zoom * 0.75
+            } else if (e.key === "[") {
+                rotation -= 10
+            } else if (e.key === "]") {
+                rotation += 10
+            } else {
+                console.log(e)
+                return
+            }
+            update(visibleImageTiles, map1, screenX, screenY, x, y, rotation, zoom)
         })
     }, 2000)
 }
