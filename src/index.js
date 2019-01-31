@@ -22,6 +22,15 @@ const update = (tiles, map, screenX, screenY, x, y, rotation, zoom) => {
     })
 }
 
+const clamp = (val, bound) => {
+    if (val > bound) {
+        val = bound
+    } else if (val < -bound) {
+        val = -bound
+    }
+    return val
+}
+
 const main = (props) => {
     let tiles = [
         new Tile(0, 0, "/images/card1.png", "card1", true, 0, 0.25),
@@ -46,45 +55,123 @@ const main = (props) => {
     })
 
     setTimeout(() => {
-        let screenX = map1.width() / 2
-        let screenY = map1.height() / 2
+        let width = map1.width()
+        let height = map1.height()
+        let screenX = width / 2
+        let screenY = height / 2
         let x = 0
         let y = 0
         let rotation = 0
         let zoom = 0.5
 
-        update(visibleImageTiles, map1, screenX, screenY, x, y, rotation, zoom)
+        let up = false
+        let down = false
+        let left = false
+        let right = false
+
+        let zoomin = false
+        let zoomout = false
+
+        let rotateleft = false
+        let rotateright = false
+
+        update(tiles, map1, screenX, screenY, x, y, rotation, zoom)
+
+        const step = () => {
+            let dirty = false
+            let stride = 5
+            let zoomFactor = 0.950
+
+            if (up) {
+                const v = normalize(0, -stride, rotation, zoom)
+                x += v.x
+                y += v.y
+                dirty = true
+            }
+            if (down) {
+                const v = normalize(0, stride, rotation, zoom)
+                x += v.x
+                y += v.y
+                dirty = true
+            }
+            if (left) {
+                const v = normalize(-stride, 0, rotation, zoom)
+                x += v.x
+                y += v.y
+                dirty = true
+            }
+            if (right) {
+                const v = normalize(stride, 0, rotation, zoom)
+                x += v.x
+                y += v.y
+                dirty = true
+            }
+            if (zoomin) {
+                zoom = zoom * (2-zoomFactor)
+                dirty = true
+            }
+            if (zoomout) {
+                zoom = zoom * zoomFactor
+                dirty = true
+            }
+            if (rotateleft) {
+                rotation -= 3
+                dirty = true
+            }
+            if (rotateright) {
+                rotation += 3
+                dirty = true
+            }
+
+            if (dirty) {
+                x = clamp(x, width)
+                y = clamp(y, height)
+                update(tiles, map1, screenX, screenY, x, y, rotation, zoom)
+            }
+
+            window.requestAnimationFrame(step)
+        }
+
+        window.requestAnimationFrame(step)
 
         window.addEventListener("keyup", (e) => {
             if (e.key === "ArrowUp") {
-                const v = normalize(0, -40, rotation, zoom)
-                x += v.x
-                y += v.y
+                up = false
             } else if (e.key === "ArrowDown") {
-                const v = normalize(0, 40, rotation, zoom)
-                x += v.x
-                y += v.y
+                down = false
             } else if (e.key === "ArrowLeft") {
-                const v = normalize(-40, 0, rotation, zoom)
-                x += v.x
-                y += v.y
+                left = false
             } else if (e.key === "ArrowRight") {
-                const v = normalize(40, 0, rotation, zoom)
-                x += v.x
-                y += v.y
+                right = false
             } else if (e.key === "=") {
-                zoom = zoom * 1.25
+                zoomin = false
             } else if (e.key === "-") {
-                zoom = zoom * 0.75
+                zoomout = false
             } else if (e.key === "[") {
-                rotation -= 10
+                rotateleft = false
             } else if (e.key === "]") {
-                rotation += 10
-            } else {
-                // console.log(e)
-                return
+                rotateright = false
             }
-            update(visibleImageTiles, map1, screenX, screenY, x, y, rotation, zoom)
+        })
+
+        window.addEventListener("keydown", (e) => {
+            if (e.key === "ArrowUp") {
+                up = true
+            } else if (e.key === "ArrowDown") {
+                down = true
+            } else if (e.key === "ArrowLeft") {
+                left = true
+            } else if (e.key === "ArrowRight") {
+                right = true
+            } else if (e.key === "=") {
+                zoomin = true
+            } else if (e.key === "-") {
+                zoomout = true
+            } else if (e.key === "[") {
+                rotateleft = true
+            } else if (e.key === "]") {
+                rotateright = true
+            }
         })
     }, 2000)
 }

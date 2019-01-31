@@ -8,7 +8,7 @@ import {
 const normalize = (x, y, rotation, zoom) => {
     return applyToPoint(
         compose(
-            scale(1 / zoom),
+            scale(2/zoom),
             rotateDEG(-rotation),
         ), {
             x: x,
