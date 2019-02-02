@@ -49,32 +49,38 @@ function clamp(val, bound) {
     return val
 }
 
-function main() {
-    let tiles = [
-        new Tile(0, 0, "/images/card1.png", "card1", true, 0, 0.25),
-        new Tile(100, 0, "/images/card1.png", "card1", true, 0, 0.25),
-        new Tile(-100, 0, "/images/card1.png", "card1", true, 90, 0.25),
-    ]
-    let map1 = SVG("map1")
+function resizeTile(resolve, image) {
+    this.element.size(image.width, image.height)
 
-    let images = tiles.map((tile) => {
-        let element = map1
-            .image(tile.url)
-            .hide()
-            .loaded(function(loader) {
-                this.size(loader.width, loader.height)
+    this.width = image.width
+    this.height = image.height
 
-                tile.width = loader.width
-                tile.height = loader.height
-            })
-        tile.element = element
-    })
+    resolve(this)
+}
 
-    let state = {
-        width: map1.width(),
-        height: map1.height(),
-        screenX: 0,
-        screenY: 0,
+function setupTile(tile, resolve, _reject) {
+    tile.element = this.image(tile.url).hide()
+    tile.element.loaded(resizeTile.bind(tile, resolve))
+}
+
+function deferredSetupTile(tile) {
+    return new Promise(setupTile.bind(this, tile))
+}
+
+function requestFrame() {
+    this.domWindow.requestAnimationFrame(this.step.bind(this))
+}
+
+function initializeState(map, tiles) {
+    let mapWidth = map.width()
+    let mapHeight = map.height()
+
+    return {
+        width: mapWidth,
+        height: mapHeight,
+        screenX: mapWidth / 2,
+        screenY: mapHeight / 2,
+
         x: 0,
         y: 0,
         rotation: 0,
@@ -91,23 +97,43 @@ function main() {
         rotateleft: false,
         rotateright: false,
 
-        stride: 5,
+        stride: 2,
         zoomFactor: 0.950,
-        tiles: tiles
+
+        tiles: tiles,
+        map: map,
+
+        update: update,
+        step: step,
+        requestFrame: requestFrame,
+        domWindow: this
     }
+}
 
-    state.screenX = state.width / 2
-    state.screenY = state.height / 2
+function showTiles(tiles) {
+    this.update.bind(this)()
+    tiles.forEach((tile) => { tile.element.show() })
+    this.requestFrame(this.step.bind(this))
+}
 
-    window.addEventListener("keyup", keyHandler.bind(state, false))
+function main(domWindow, id) {
+    let tiles = [
+        new Tile(0, 0, "/images/card1.png", "card1", true, 0, 0.25),
+        new Tile(100, 0, "/images/card1.png", "card1", true, 0, 0.25),
+        new Tile(-100, 0, "/images/card1.png", "card1", true, 90, 0.25),
+    ]
 
-    window.addEventListener("keydown", keyHandler.bind(state, true))
+    let map = SVG(id)
 
-    window.setTimeout(() => {
-        tiles.forEach((tile) => { tile.element.show() })
-        update.bind(state)()
-    }, 2000)
-    window.requestAnimationFrame(step.bind(state))
+    let state = initializeState.bind(domWindow)(map, tiles)
+    let tilePromises = tiles.map(deferredSetupTile.bind(map))
+
+    domWindow.addEventListener("keyup", keyHandler.bind(state, false))
+    domWindow.addEventListener("keydown", keyHandler.bind(state, true))
+
+    Promise.all(tilePromises)
+        .then(showTiles.bind(state))
+        .then(requestFrame.bind(state))
 }
 
 function step() {
@@ -160,10 +186,9 @@ function step() {
         update.bind(this)()
     }
 
-    window.requestAnimationFrame(step.bind(this))
+    this.requestFrame(step.bind(this))
 }
 
 waitForDOM()
-    .then(() => {
-        main()
-    })
+    .then(() => { main(window, "map1") })
+    .then(() => { main(window, "map2") })
