@@ -1,0 +1,21 @@
+{
+    "tiles": [{
+            "x": 0,
+            "y": 0,
+            "url": "/images/card1.png",
+            "group": "card0",
+            "visible": true,
+            "rotation": 0,
+            "scale": 0.25
+        },
+        {
+            "x": 0,
+            "y": 100,
+            "url": "/images/card1.png",
+            "group": "card1",
+            "visible": true,
+            "rotation": -90,
+            "scale": 0.25
+        }
+    ]
+}
