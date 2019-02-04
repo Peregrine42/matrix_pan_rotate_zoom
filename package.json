@@ -23,7 +23,7 @@
     "description": "A matrix transformation demo.",
     "main": "src/index.js",
     "scripts": {
-        "setup": "./node_modules/.bin/webdriver-manager update",
+        "test": "./node_modules/.bin/jest",
         "build": "./node_modules/.bin/webpack --config webpack.prod.config.js",
         "dev": "./node_modules/.bin/webpack --config webpack.dev.config.js",
         "server": "./node_modules/.bin/http-server"
